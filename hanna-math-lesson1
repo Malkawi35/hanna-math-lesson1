@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العدّ القفزي والضرب في 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#5B21B6; --lpurple:#EDE9FE; --bg:#F7F5FF;
+    --teal:#0D9488; --orange:#EA580C; --pink:#DB2777; --green:#16A34A;
+    --dark:#1E1B4B; --gold:#F59E0B; --ink:#312E81;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{font-family:'Tajawal',sans-serif; background:var(--bg); color:var(--dark); overflow:hidden; -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Baloo Bhaijaan 2','Tajawal',cursive;}
+  .stage{position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; padding:6vh 4vw 13vh; overflow-y:auto; -webkit-overflow-scrolling:touch; animation:fade .5s ease both;}
+  .stage.active{display:flex;}
+  @keyframes fade{from{opacity:0; transform:translateY(14px);}to{opacity:1; transform:none;}}
+  h1{font-size:clamp(28px,6vw,68px); color:var(--purple); line-height:1.15; text-align:center;}
+  h2{font-size:clamp(22px,4vw,42px); color:var(--purple); margin-bottom:2vh; text-align:center;}
+  .sub{font-size:clamp(16px,2.6vw,30px); color:#6D28D9; margin-top:2vh; text-align:center;}
+  .nav{position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:center; gap:14px; z-index:50; padding:14px 0 22px; background:linear-gradient(to top, var(--bg) 55%, rgba(247,245,255,0));}
+  .btn{font-family:'Tajawal',sans-serif; font-weight:700; font-size:clamp(15px,2vw,22px); border:none; border-radius:999px; padding:.7em 1.6em; cursor:pointer; background:var(--purple); color:#fff; box-shadow:0 6px 0 #4C1D95, 0 10px 18px rgba(91,33,182,.3); transition:transform .08s, box-shadow .08s; user-select:none;}
+  .btn:active{transform:translateY(4px); box-shadow:0 2px 0 #4C1D95, 0 5px 10px rgba(91,33,182,.3);}
+  .btn.alt{background:#fff; color:var(--purple); box-shadow:0 6px 0 #DDD6FE, 0 10px 18px rgba(0,0,0,.08);}
+  .btn.alt:active{box-shadow:0 2px 0 #DDD6FE;}
+  .btn:disabled{opacity:.4; cursor:default; transform:none; box-shadow:0 6px 0 #4C1D95;}
+  .progress{position:fixed; top:0; left:0; height:7px; background:var(--gold); width:0; transition:width .4s; z-index:60;}
+  .badge{position:fixed; top:12px; left:18px; font-weight:700; color:#7C3AED; font-size:clamp(13px,1.6vw,18px); z-index:60;}
+  .sndbtn{position:fixed; top:10px; right:16px; z-index:60; background:#fff; border:none; border-radius:999px; padding:.3em .7em; font-size:clamp(14px,1.8vw,20px); cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.12);}
+
+  .socks-row{display:flex; gap:clamp(8px,2vw,26px); flex-wrap:wrap; justify-content:center;}
+  .pair{background:#fff; border-radius:22px; padding:clamp(10px,1.6vw,20px); box-shadow:0 10px 24px rgba(0,0,0,.08); display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .15s;}
+  .pair:hover{transform:translateY(-6px) scale(1.03);}
+  .pair .count{margin-top:8px; font-weight:800; color:#fff; border-radius:12px; padding:.1em .7em; font-size:clamp(18px,2.4vw,30px); opacity:0; transform:scale(.4); transition:.3s;}
+  .pair.on .count{opacity:1; transform:scale(1);}
+  .pair .run{font-size:clamp(16px,2.2vw,30px); font-weight:800; min-height:1.2em; margin-bottom:6px; color:var(--dark); opacity:0; transition:.3s;}
+  .pair.on .run{opacity:1;}
+  svg.sock{width:clamp(40px,6vw,80px); height:auto; display:block;}
+  .total{margin-top:2.4vh; font-size:clamp(18px,3vw,36px); font-weight:800; color:var(--purple); background:#fff; padding:.45em 1.1em; border-radius:18px; box-shadow:0 8px 20px rgba(0,0,0,.07); opacity:0; transition:.4s;}
+  .total.show{opacity:1;}
+
+  .board{position:relative; width:min(94vw,1100px); height:clamp(260px,42vh,440px);}
+  svg.line{width:100%; height:100%; overflow:visible;}
+  .frog{position:absolute; width:clamp(54px,8vw,104px); z-index:5;}
+
+  .qwrap{width:min(92vw,820px);}
+  .qtext{font-size:clamp(20px,3.4vw,38px); font-weight:800; color:var(--dark); text-align:center; margin-bottom:2.4vh;}
+  .opt{display:flex; align-items:center; justify-content:center; gap:10px; background:var(--ink); color:#fff; border:none; width:100%; font-family:'Tajawal',sans-serif; font-weight:800; font-size:clamp(19px,2.8vw,32px); border-radius:18px; padding:.65em 1em; margin-bottom:16px; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.18); transition:transform .1s, background .2s;}
+  .opt:hover{transform:scale(1.02);}
+  .opt.correct{background:var(--green); animation:pop .4s;}
+  .opt.wrong{background:#9F1239; animation:shake .4s;}
+  .opt:disabled{cursor:default;}
+  @keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-9px);}75%{transform:translateX(9px);}}
+  .feedback{min-height:2.2em; text-align:center; font-size:clamp(18px,2.6vw,30px); font-weight:800; margin-top:1vh;}
+
+  .cards2{display:flex; gap:clamp(12px,3vw,40px); align-items:center; flex-wrap:wrap; justify-content:center;}
+  .ibox{background:#fff; border-radius:24px; padding:clamp(14px,2.3vw,32px) clamp(18px,3vw,44px); box-shadow:0 12px 30px rgba(0,0,0,.09); text-align:center; min-width:min(40vw,300px);}
+  .ibox .lbl{font-size:clamp(17px,2.2vw,28px); font-weight:800; margin-bottom:1vh;}
+  .ibox .eq{font-size:clamp(24px,3.6vw,48px); font-weight:800; color:var(--dark);}
+  .eqsign{font-size:clamp(36px,6vw,84px); font-weight:800; color:var(--purple);}
+  .ribbon{margin-top:2.6vh; background:var(--green); color:#fff; font-weight:800; font-size:clamp(17px,2.6vw,30px); padding:.5em 1.5em; border-radius:999px; box-shadow:0 8px 20px rgba(22,163,74,.35);}
+
+  .groups{display:flex; gap:clamp(10px,2vw,28px); flex-wrap:wrap; justify-content:center; margin:2vh 0;}
+  .grp{background:#fff; border-radius:18px; padding:clamp(10px,1.5vw,18px); box-shadow:0 8px 20px rgba(0,0,0,.08); display:flex; gap:6px; cursor:pointer; transition:transform .2s;}
+  .dot{width:clamp(20px,2.6vw,34px); height:clamp(20px,2.6vw,34px); border-radius:50%;}
+
+  #cc{position:fixed; inset:0; pointer-events:none; z-index:40;}
+  .hint{font-size:clamp(14px,2vw,22px); color:#7C3AED; margin-top:2.4vh; font-weight:700; text-align:center; padding:0 2vw;}
+  .star{font-size:clamp(40px,8vw,96px);}
+  .counter{font-size:clamp(40px,9vw,120px); font-weight:800; color:var(--purple); font-family:'Baloo Bhaijaan 2',cursive; min-height:1.2em;}
+  .realrow{display:flex; gap:clamp(14px,3vw,40px); flex-wrap:wrap; justify-content:center; margin-top:2vh;}
+  .realcard{background:#fff; border-radius:20px; padding:clamp(14px,2vw,26px); box-shadow:0 10px 24px rgba(0,0,0,.08); text-align:center; cursor:pointer; transition:transform .15s; min-width:min(26vw,180px);}
+  .realcard:hover{transform:translateY(-5px);}
+  .realcard .emoji{font-size:clamp(36px,6vw,64px);}
+  .realcard .ans{font-size:clamp(18px,2.6vw,30px); font-weight:800; color:var(--green); opacity:0; transition:.3s; min-height:1.2em;}
+  .realcard.on .ans{opacity:1;}
+
+  /* credits slide */
+  .credits{display:flex; gap:clamp(12px,2vw,28px); flex-wrap:wrap; justify-content:center; max-width:1100px;}
+  .credit-card{background:#fff; border-radius:22px; padding:clamp(16px,2vw,28px); box-shadow:0 10px 26px rgba(0,0,0,.08); width:min(30vw,320px); min-width:240px; text-align:center;}
+  .credit-card .cemoji{font-size:clamp(32px,4vw,52px);}
+  .credit-card .ctitle{font-weight:800; color:var(--purple); font-size:clamp(17px,2.2vw,26px); margin:.4em 0;}
+  .credit-card .ctext{font-size:clamp(14px,1.8vw,20px); line-height:1.7; color:var(--dark);}
+  .madeby{margin-top:2.4vh; background:var(--purple); color:#fff; font-weight:700; font-size:clamp(16px,2.2vw,26px); padding:.5em 1.6em; border-radius:999px; box-shadow:0 8px 20px rgba(91,33,182,.3);}
+  .btnrow{display:flex; gap:12px; margin-top:3vh; flex-wrap:wrap; justify-content:center;}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="badge" id="badge">1 / 12</div>
+<button class="sndbtn" id="sndbtn" title="الصوت">🔊</button>
+
+<!-- 1 TITLE -->
+<section class="stage active" data-stage>
+  <div class="star">🧦</div>
+  <h1 class="display">كم عدد الجوارب؟</h1>
+  <p class="sub">سنكتشف العلاقة بين <b>العدّ القفزي بمقدار 2</b> و <b>الضرب في 2</b></p>
+  <p class="hint">اضغط «ابدأ» للانتقال — أو استخدم مفتاح المسافة</p>
+</section>
+
+<!-- 2 WARM UP -->
+<section class="stage" data-stage>
+  <h2 class="display">لنعدّ قفزياً بمقدار 2 🐾</h2>
+  <div class="counter" id="warmNum">0</div>
+  <div class="btnrow">
+    <button class="btn" id="warmBtn">عُدّ ➕2</button>
+    <button class="btn alt" id="warmReset">من البداية</button>
+  </div>
+  <p class="hint" id="warmMsg">اضغط لتعدّ: 2، 4، 6، 8، 10…</p>
+</section>
+
+<!-- 3 SOCKS + 4x2 answer -->
+<section class="stage" data-stage>
+  <h2 class="display">عُدّ الجوارب… زوجاً زوجاً</h2>
+  <div class="socks-row" id="socksRow"></div>
+  <div class="total" id="sockTotal">2 + 2 + 2 + 2 = 8</div>
+  <div class="qwrap" id="sockQ" style="margin-top:2.2vh; display:none; width:min(90vw,640px);">
+    <div class="qtext" style="font-size:clamp(18px,2.8vw,32px); margin-bottom:1.6vh;">عندنا 4 مجموعات، كلّ مجموعة فيها 2. أيّ جملة ضرب تصفها؟</div>
+    <div id="sockOpts"></div>
+    <div class="feedback" id="sockFb"></div>
+  </div>
+  <p class="hint" id="sockHint">اضغط على كل زوج لتعدّه: 2، 4، 6، 8</p>
+</section>
+
+<!-- 4 FROG -->
+<section class="stage" data-stage>
+  <h2 class="display" style="color:var(--green)">الضفدع يقفز بمقدار 2 🐸</h2>
+  <div class="board" id="frogBoard">
+    <svg class="line" id="frogLine" viewBox="0 0 1100 360" preserveAspectRatio="xMidYMid meet"></svg>
+    <img class="frog" id="frog" alt="frog"
+      src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 110'><ellipse cx='60' cy='62' rx='44' ry='38' fill='%234CAF50'/><ellipse cx='60' cy='70' rx='24' ry='30' fill='%23C5E1A5'/><ellipse cx='22' cy='74' rx='16' ry='12' fill='%23388E3C'/><ellipse cx='98' cy='74' rx='16' ry='12' fill='%23388E3C'/><circle cx='40' cy='26' r='17' fill='%234CAF50'/><circle cx='80' cy='26' r='17' fill='%234CAF50'/><circle cx='40' cy='26' r='11' fill='white'/><circle cx='80' cy='26' r='11' fill='white'/><circle cx='42' cy='28' r='5' fill='%231E1B4B'/><circle cx='82' cy='28' r='5' fill='%231E1B4B'/><path d='M40 66 Q60 84 80 66' stroke='%23388E3C' stroke-width='4' fill='none' stroke-linecap='round'/></svg>">
+  </div>
+  <div class="btnrow">
+    <button class="btn" id="jumpBtn">قفزة! ➕2</button>
+    <button class="btn alt" id="resetFrog">من البداية</button>
+  </div>
+  <p class="hint" id="frogMsg">اضغط «قفزة» وعُدّ مع الضفدع</p>
+</section>
+
+<!-- 5 BIG IDEA -->
+<section class="stage" data-stage>
+  <h2 class="display">الفكرة الكبيرة 💡</h2>
+  <div class="cards2">
+    <div class="ibox"><div class="lbl" style="color:var(--teal)">الجمع المتكرر</div><div class="eq">2 + 2 + 2 + 2</div><div class="eq" style="color:var(--teal)">= 8</div></div>
+    <div class="eqsign">=</div>
+    <div class="ibox"><div class="lbl" style="color:var(--orange)">الضرب</div><div class="eq">4 × 2</div><div class="eq" style="color:var(--orange)">= 8</div></div>
+  </div>
+  <div class="ribbon">العدّ القفزي = الضرب ✅</div>
+</section>
+
+<!-- 6 GROUPS 3x2 -->
+<section class="stage" data-stage>
+  <h2 class="display">3 مجموعات × 2</h2>
+  <div class="groups" id="grpHost"></div>
+  <div class="sub" id="grpEq" style="opacity:0; transition:.4s; font-weight:800; color:var(--purple)">2 + 2 + 2 = 3 × 2 = 6</div>
+  <p class="hint">اضغط على كل مجموعة لتعدّها</p>
+</section>
+
+<!-- 7 Q1 -->
+<section class="stage" data-stage>
+  <div class="qwrap"><div class="qtext">5 × 2 يساوي مثل أيّ جملة جمع؟</div><div id="q1opts"></div><div class="feedback" id="q1fb"></div></div>
+</section>
+
+<!-- 8 Q2 -->
+<section class="stage" data-stage>
+  <div class="qwrap"><div class="qtext">2 + 2 + 2 = ؟ × 2</div><div id="q2opts"></div><div class="feedback" id="q2fb"></div></div>
+</section>
+
+<!-- 9 Q3 -->
+<section class="stage" data-stage>
+  <div class="qwrap"><div class="qtext">عُدّ قفزياً: 2، 4، 6، 8، … ما العدد التالي؟</div><div id="q3opts"></div><div class="feedback" id="q3fb"></div></div>
+</section>
+
+<!-- 10 REAL LIFE -->
+<section class="stage" data-stage>
+  <h2 class="display">العدّ بمقدار 2 حولنا 👀</h2>
+  <p class="sub" style="margin-top:0">كم العدد في كل صورة؟ اضغط لتتأكّد</p>
+  <div class="realrow" id="realRow"></div>
+</section>
+
+<!-- 11 CREDITS / HOW WE MADE IT -->
+<section class="stage" data-stage>
+  <h2 class="display">كيف صنعنا هذا الدرس؟ 🛠️</h2>
+  <div class="credits">
+    <div class="credit-card">
+      <div class="cemoji">🤖</div>
+      <div class="ctitle">الأداة المستخدمة</div>
+      <div class="ctext">صُمِّم هذا الدرس التفاعلي بمساعدة <b>Claude</b> من شركة <b>Anthropic</b> — ذكاء اصطناعي حوّل فكرتنا إلى ملفٍ تفاعليّ كامل.</div>
+    </div>
+    <div class="credit-card">
+      <div class="cemoji">✨</div>
+      <div class="ctitle">ما الذي أنشأه Claude؟</div>
+      <div class="ctext">الرسوم المتحركة (الضفدع القافز)، الجوارب، خطّ الأعداد، الأسئلة التفاعلية، أصوات التشجيع والتصفيق — كلّها في ملفٍ واحد.</div>
+    </div>
+    <div class="credit-card">
+      <div class="cemoji">🎯</div>
+      <div class="ctitle">هدف الدرس</div>
+      <div class="ctext">أن يستنتج الطالب العلاقة بين <b>العدّ القفزي بمقدار 2</b> و<b>الضرب في 2</b>.</div>
+    </div>
+  </div>
+  <div class="madeby">إعداد وتقديم: <b id="byName">هناء شهاب</b></div>
+  <p class="hint">للتنقّل: استخدم زرّي «التالي» و«السابق» أو مفتاحَي الأسهم ومفتاح المسافة</p>
+</section>
+
+<!-- 12 END -->
+<section class="stage" data-stage>
+  <div class="star">🏆</div>
+  <h1 class="display" style="color:var(--purple)">أحسنتم يا أبطال!</h1>
+  <p class="sub">العدّ القفزي بمقدار 2 &nbsp;=&nbsp; الضرب في 2</p>
+  <p class="sub" style="color:var(--gold); font-weight:800">2، 4، 6، 8، 10 …</p>
+  <p class="hint" style="margin-top:3vh">صُنع بمساعدة Claude 🤖 — أداة ذكاء اصطناعي من Anthropic</p>
+</section>
+
+<canvas id="cc"></canvas>
+
+<div class="nav">
+  <button class="btn alt" id="prev">السابق</button>
+  <button class="btn" id="next">ابدأ ◀</button>
+</div>
+
+<script>
+const AR=['0','1','2','3','4','5','6','7','8','9'];
+const ad=n=>String(n);
+const stages=[...document.querySelectorAll('[data-stage]')];
+let cur=0;
+const prog=document.getElementById('prog'), badge=document.getElementById('badge');
+const nextBtn=document.getElementById('next'), prevBtn=document.getElementById('prev');
+
+/* SOUND */
+let soundOn=true, AC=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return AC; }
+document.getElementById('sndbtn').onclick=function(){ soundOn=!soundOn; this.textContent=soundOn?'🔊':'🔇'; if(soundOn) ac(); };
+document.addEventListener('click',()=>{ if(AC && AC.state==='suspended') AC.resume(); });
+function tone(freq,start,dur,type,vol){ const a=ac(); if(!a||!soundOn) return; const o=a.createOscillator(), g=a.createGain(); o.type=type||'sine'; o.frequency.value=freq; o.connect(g); g.connect(a.destination); const t=a.currentTime+start; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.2,t+.01); g.gain.exponentialRampToValueAtTime(.001,t+dur); o.start(t); o.stop(t+dur+.02); }
+function noiseClap(start){ const a=ac(); if(!a||!soundOn) return; const len=Math.floor(a.sampleRate*0.12); const buf=a.createBuffer(1,len,a.sampleRate); const d=buf.getChannelData(0); for(let i=0;i<len;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4); } const src=a.createBufferSource(); src.buffer=buf; const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1800; f.Q.value=.8; const g=a.createGain(); g.gain.value=.5; src.connect(f); f.connect(g); g.connect(a.destination); src.start(a.currentTime+start); }
+function applause(){ for(let i=0;i<7;i++) noiseClap(i*0.09 + Math.random()*0.03); }
+function happyChime(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*0.10,0.35,'triangle',0.22)); }
+function correctSound(){ applause(); happyChime(); }
+function clickSound(){ tone(700,0,0.08,'square',0.12); }
+function jumpSound(){ tone(420,0,0.12,'sine',0.18); tone(640,0.06,0.14,'sine',0.16); }
+function wrongSound(){ tone(200,0,0.18,'sawtooth',0.14); }
+
+const PRAISE=['أحسنت! 👏','رائع! 🌟','ممتاز! 🎉','بطل! 💪','عمل جميل! 👍'];
+const praise=()=>PRAISE[Math.floor(Math.random()*PRAISE.length)];
+
+function show(i){
+  stages[cur].classList.remove('active');
+  cur=Math.max(0,Math.min(stages.length-1,i));
+  stages[cur].classList.add('active');
+  prog.style.width=((cur+1)/stages.length*100)+'%';
+  badge.textContent=ad(cur+1)+' / '+ad(stages.length);
+  prevBtn.disabled=cur===0;
+  nextBtn.textContent = cur===0 ? 'ابدأ ◀' : (cur===stages.length-1 ? 'إعادة ↻' : 'التالي ◀');
+  if(cur===2) initSocks();
+  if(cur===3) initFrog();
+  if(cur===5) initGroups();
+  if(cur===9) initReal();
+  if(cur===11){ burst(); correctSound(); }
+}
+nextBtn.onclick=()=>{ if(cur===stages.length-1){ resetAll(); show(0);} else show(cur+1); };
+prevBtn.onclick=()=>show(cur-1);
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft'||e.key===' '){ e.preventDefault(); nextBtn.click(); } if(e.key==='ArrowRight') prevBtn.click(); });
+
+/* WARM UP */
+let warm=0;
+document.getElementById('warmBtn').onclick=()=>{ warm+=2; document.getElementById('warmNum').textContent=ad(warm); jumpSound(); if(warm>=20){ document.getElementById('warmMsg').textContent='ممتاز! عددنا حتى 20 🎉'; correctSound(); } };
+document.getElementById('warmReset').onclick=()=>{ warm=0; document.getElementById('warmNum').textContent='0'; document.getElementById('warmMsg').textContent='اضغط لتعدّ: 2، 4، 6، 8، 10…'; };
+
+/* SOCKS */
+const SOCK_COLORS=['#0D9488','#EA580C','#DB2777','#16A34A'];
+const sockSVG=c=>`<svg class="sock" viewBox="0 0 90 120"><rect x="20" y="6" width="40" height="78" rx="10" fill="${c}"/><rect x="14" y="2" width="52" height="26" rx="8" fill="${c}" opacity=".55"/><line x1="16" y1="10" x2="64" y2="10" stroke="#fff" stroke-width="4"/><line x1="16" y1="20" x2="64" y2="20" stroke="#fff" stroke-width="4"/><path d="M20 78 h54 a20 20 0 0 1 0 40 h-54 a8 8 0 0 1 -8 -8 v-24 a8 8 0 0 1 8 -8z" fill="${c}"/></svg>`;
+let sockBuilt=false;
+function initSocks(){
+  if(sockBuilt) return; sockBuilt=true;
+  const row=document.getElementById('socksRow'); row.innerHTML='';
+  const runs=[2,4,6,8];
+  SOCK_COLORS.forEach((c,i)=>{
+    const d=document.createElement('div'); d.className='pair';
+    d.innerHTML=`<div class="run">${ad(runs[i])}</div><div style="display:flex;gap:4px">${sockSVG(c)}${sockSVG(c)}</div><div class="count" style="background:${c}">${ad(2)}</div>`;
+    d.onclick=()=>{ if(!d.classList.contains('on')){ d.classList.add('on'); clickSound(); checkSocks(); } };
+    row.appendChild(d);
+  });
+  makeQ('sockOpts','sockFb',[{t:'4 × 2 = 8', ok:true},{t:'4 + 2 = 6', ok:false},{t:'2 × 2 = 4', ok:false}],'4 مجموعات × 2 = 8 👏');
+}
+function checkSocks(){
+  const all=[...document.querySelectorAll('#socksRow .pair')];
+  if(all.every(p=>p.classList.contains('on'))){
+    document.getElementById('sockTotal').classList.add('show');
+    document.getElementById('sockQ').style.display='block';
+    document.getElementById('sockHint').textContent='والآن: 4 مجموعات من 2 … أيّ جملة ضرب تصفها؟';
+  }
+}
+
+/* FROG */
+const NUMS=[0,2,4,6,8];
+const ARC=['#0D9488','#EA580C','#DB2777','#16A34A'];
+let frogPos=0, frogBuilt=false, posX=[];
+const lineSVG=document.getElementById('frogLine');
+const frogEl=document.getElementById('frog');
+function initFrog(){ if(frogBuilt) return; frogBuilt=true; buildLine(); frogPos=0; placeFrog(0); }
+function buildLine(){
+  const y=240, x0=70, x1=1030;
+  const xs=[]; for(let i=0;i<=8;i++) xs.push(x0+i*(x1-x0)/8);
+  posX=NUMS.map(n=>xs[n]);
+  let s=`<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1E1B4B"/></marker></defs>`;
+  s+=`<line x1="${x0}" y1="${y}" x2="${x1+8}" y2="${y}" stroke="#1E1B4B" stroke-width="6" marker-end="url(#ah)"/>`;
+  for(let i=0;i<=8;i++){ const big=NUMS.includes(i), th=big?22:11; s+=`<line x1="${xs[i]}" y1="${y-th}" x2="${xs[i]}" y2="${y+th}" stroke="#1E1B4B" stroke-width="${big?5:3}"/>`; }
+  NUMS.forEach((n,idx)=>{ const cx=xs[n]; s+=`<circle id="num${idx}" cx="${cx}" cy="${y+70}" r="34" fill="${n===0?'#9aa':'#d6d3e6'}"/><text x="${cx}" y="${y+70}" text-anchor="middle" dominant-baseline="central" font-family="Tajawal" font-weight="800" font-size="34" fill="#fff">${ad(n)}</text>`; });
+  for(let i=0;i<4;i++){ const xa=xs[NUMS[i]], xb=xs[NUMS[i+1]], r=(xb-xa)/2, cx=(xa+xb)/2, top=y-150; s+=`<path id="arc${i}" d="M${xa},${y} A ${r} ${r} 0 0 1 ${xb} ${y}" fill="none" stroke="${ARC[i]}" stroke-width="9" stroke-dasharray="${Math.PI*r}" stroke-dashoffset="${Math.PI*r}"/><text id="plus${i}" x="${cx}" y="${top-2}" text-anchor="middle" font-family="Tajawal" font-weight="800" font-size="30" fill="${ARC[i]}" opacity="0">${ad(2)} +</text>`; }
+  lineSVG.innerHTML=s;
+}
+function svgToPx(svgX,svgY){ const board=document.getElementById('frogBoard').getBoundingClientRect(); const vbW=1100, vbH=360; const scale=Math.min(board.width/vbW, board.height/vbH); const offX=(board.width - vbW*scale)/2, offY=(board.height - vbH*scale)/2; return {x:offX+svgX*scale, y:offY+svgY*scale}; }
+function placeFrog(idx){ const p=svgToPx(posX[idx],240); const fw=frogEl.offsetWidth||80; frogEl.style.left=(p.x-fw/2)+'px'; frogEl.style.top=(p.y-fw*0.95)+'px'; }
+window.addEventListener('resize',()=>{ if(cur===3){ placeFrog(frogPos);} });
+document.getElementById('jumpBtn').onclick=()=>doJump();
+document.getElementById('resetFrog').onclick=()=>{ frogPos=0; for(let i=0;i<4;i++){ revealArc(i,false); litNum(i+1,false);} placeFrog(0); document.getElementById('frogMsg').textContent='اضغط «قفزة» وعُدّ مع الضفدع'; };
+function litNum(idx,on){ const c=document.getElementById('num'+idx); if(c) c.setAttribute('fill', on?'#5B21B6':'#d6d3e6'); }
+function revealArc(i,on){ const a=document.getElementById('arc'+i), p=document.getElementById('plus'+i); if(!a) return; const len=parseFloat(a.getAttribute('stroke-dasharray')); a.style.transition= on?'stroke-dashoffset .5s ease':'none'; a.setAttribute('stroke-dashoffset', on?0:len); if(p) p.setAttribute('opacity', on?1:0); }
+let jumping=false;
+function doJump(){
+  if(jumping) return;
+  if(frogPos>=4){ document.getElementById('frogMsg').textContent='وصلنا إلى 8! 🎉'; correctSound(); return; }
+  jumping=true; jumpSound();
+  const from=frogPos, to=frogPos+1;
+  const a=svgToPx(posX[from],240), b=svgToPx(posX[to],240);
+  const fw=frogEl.offsetWidth||80; const peak=120, dur=620, t0=performance.now();
+  function step(t){ let k=(t-t0)/dur; if(k>1)k=1;
+    const x=a.x+(b.x-a.x)*k, yy=a.y - peak*Math.sin(Math.PI*k);
+    frogEl.style.left=(x-fw/2)+'px'; frogEl.style.top=(yy-fw*0.95)+'px';
+    if(k<1) requestAnimationFrame(step);
+    else{ frogPos=to; revealArc(from,true); litNum(to,true); jumping=false; document.getElementById('frogMsg').textContent='عددنا: '+NUMS.slice(1,to+1).map(ad).join('، '); if(to===4) setTimeout(correctSound,150); }
+  }
+  requestAnimationFrame(step);
+}
+
+/* GROUPS */
+let grpBuilt=false, grpClicked=0;
+function initGroups(){
+  if(grpBuilt) return; grpBuilt=true;
+  const host=document.getElementById('grpHost'); host.innerHTML='';
+  ['#0D9488','#EA580C','#DB2777'].forEach(c=>{
+    const g=document.createElement('div'); g.className='grp';
+    g.innerHTML=`<span class="dot" style="background:${c}"></span><span class="dot" style="background:${c}"></span>`;
+    g.onclick=()=>{ g.style.transform='scale(1.12)'; clickSound(); setTimeout(()=>g.style.transform='',200); checkGroups(); };
+    host.appendChild(g);
+  });
+}
+function checkGroups(){ grpClicked++; if(grpClicked>=3){ document.getElementById('grpEq').style.opacity=1; correctSound(); } }
+
+/* QUESTIONS */
+function makeQ(host,fbId,opts,goodMsg){
+  const h=document.getElementById(host); h.innerHTML=''; delete h.dataset.done;
+  document.getElementById(fbId).textContent='';
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=o.t;
+    b.onclick=()=>{
+      if(h.dataset.done) return;
+      if(o.ok){ b.classList.add('correct'); h.dataset.done='1'; const fb=document.getElementById(fbId); fb.textContent=praise()+' '+goodMsg; fb.style.color='#16A34A'; correctSound(); burst(); [...h.children].forEach(c=>c.disabled=true); }
+      else{ b.classList.add('wrong'); b.disabled=true; wrongSound(); const fb=document.getElementById(fbId); fb.textContent='حاول مرة أخرى 🤔'; fb.style.color='#9F1239'; }
+    };
+    h.appendChild(b);
+  });
+}
+function buildQuestions(){
+  makeQ('q1opts','q1fb',[{t:'2 + 2 + 2 + 2 + 2', ok:true},{t:'5 + 2', ok:false},{t:'2 + 5 + 2', ok:false}],'2 مكررة 5 مرات = 5 × 2 ✅');
+  makeQ('q2opts','q2fb',[{t:'3 × 2', ok:true},{t:'2 × 2', ok:false},{t:'6 × 2', ok:false}],'2 ثلاث مرات = 3 × 2 ✅');
+  makeQ('q3opts','q3fb',[{t:'10', ok:true},{t:'9', ok:false},{t:'12', ok:false}],'بعد 8 نقفز 2 فنصل إلى 10 ✅');
+}
+buildQuestions();
+
+/* REAL LIFE */
+let realBuilt=false;
+function initReal(){
+  if(realBuilt) return; realBuilt=true;
+  const row=document.getElementById('realRow'); row.innerHTML='';
+  const items=[
+    {e:'👀', q:'العينان… كم عين؟', ans:'2 عينان'},
+    {e:'🧤🧤', q:'يدان… كم قفّاز؟', ans:'2 قفّازان'},
+    {e:'🚲🚲🚲', q:'3 دراجات… كم عجلة؟', ans:'3 × 2 = 6 عجلات'},
+  ];
+  items.forEach(it=>{
+    const c=document.createElement('div'); c.className='realcard';
+    c.innerHTML=`<div class="emoji">${it.e}</div><div class="rq" style="font-weight:800;margin:.4em 0; font-size:clamp(15px,2vw,22px)">${it.q}</div><div class="ans">${it.ans}</div><div class="tap" style="font-size:clamp(12px,1.6vw,16px); color:#7C3AED; margin-top:.3em">اضغط للإجابة 👆</div>`;
+    c.onclick=()=>{ if(!c.classList.contains('on')){ c.classList.add('on'); c.querySelector('.tap').style.display='none'; clickSound(); correctSound(); } };
+    row.appendChild(c);
+  });
+}
+
+/* RESET */
+function resetAll(){
+  warm=0; document.getElementById('warmNum').textContent='0';
+  sockBuilt=false; document.getElementById('socksRow').innerHTML=''; document.getElementById('sockTotal').classList.remove('show'); document.getElementById('sockQ').style.display='none'; document.getElementById('sockHint').textContent='اضغط على كل زوج لتعدّه: 2، 4، 6، 8';
+  frogBuilt=false; jumping=false;
+  grpBuilt=false; grpClicked=0; document.getElementById('grpHost').innerHTML=''; document.getElementById('grpEq').style.opacity=0;
+  realBuilt=false; document.getElementById('realRow').innerHTML='';
+  buildQuestions();
+}
+
+/* CONFETTI */
+const cc=document.getElementById('cc'), ctx=cc.getContext('2d');
+let parts=[];
+function size(){cc.width=innerWidth; cc.height=innerHeight;} size(); addEventListener('resize',size);
+function burst(){ const cols=['#5B21B6','#16A34A','#EA580C','#DB2777','#F59E0B','#0D9488']; for(let i=0;i<130;i++) parts.push({x:innerWidth/2,y:innerHeight*0.35, vx:(Math.random()-.5)*12, vy:Math.random()*-12-4, g:.4, c:cols[i%cols.length], s:6+Math.random()*8, r:Math.random()*6, vr:(Math.random()-.5)*.4, life:130}); }
+function loop(){ ctx.clearRect(0,0,cc.width,cc.height); parts.forEach(p=>{p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.life--; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore();}); parts=parts.filter(p=>p.life>0 && p.y<cc.height+40); requestAnimationFrame(loop); }
+loop();
+show(0);
+</script>
+</body>
+</html>
